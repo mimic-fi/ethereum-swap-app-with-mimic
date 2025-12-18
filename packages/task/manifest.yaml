@@ -1,0 +1,12 @@
+version: 1.0.0
+name: Swap task
+description: Task to execute cross-chain swaps
+inputs:
+  - sourceChainId: uint32
+  - destinationChainId: uint32
+  - tokenIn: address
+  - amountIn: string        # e.g., '30.5' = 30.5 tokenIn
+  - tokenOut: address
+  - slippageBps: uint16     # e.g., 50 = 0.50%
+abis:
+  - ERC20: ./abis/ERC20.json
