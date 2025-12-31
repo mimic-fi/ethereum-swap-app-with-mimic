@@ -1,0 +1,20 @@
+{
+  "name": "ethereum-swap-app-with-mimic-7702",
+  "description": "Ethereum swap app with Mimic - 7702",
+  "private": true,
+  "version": "0.0.1",
+  "license": "Private",
+  "scripts": {
+    "lint": "eslint .",
+    "test": "echo 'No tests'",
+    "upgrade-7702": "ts-node upgrade-7702.ts"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.5",
+    "dotenv": "^17.2.2",
+    "eslint": "^9.10.0",
+    "ts-node": "^10.9.2",
+    "tsx": "^4.20.3",
+    "typescript": "^5.8.3"
+  }
+}
