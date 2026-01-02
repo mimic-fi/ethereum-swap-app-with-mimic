@@ -1,4 +1,4 @@
-import { fp, TriggerType } from '@mimicprotocol/sdk'
+import { fp, Config, TriggerType } from '@mimicprotocol/sdk'
 import { CHAIN_IDS } from '@/lib/chains'
 import { TOKENS } from '@/lib/tokens'
 import sdk from '@/lib/sdk'
@@ -18,7 +18,7 @@ const BPS_DECIMALS = 2
 const TASK_EXECUTION_DELTA_MINUTES = 5
 const TASK_CID = process.env.NEXT_PUBLIC_SWAP_TASK_CID!
 
-export async function swap(params: SwapParams) {
+export async function swap(params: SwapParams): Promise<Config> {
   const { sourceChain, sourceToken, destinationChain, destinationToken, sourceAmount, slippage, signer } = params
 
   const sourceChainId = CHAIN_IDS[sourceChain]?.id
