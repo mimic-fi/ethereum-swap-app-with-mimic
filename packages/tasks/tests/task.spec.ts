@@ -1,5 +1,5 @@
 import { fp, OpType, randomEvmAddress } from '@mimicprotocol/sdk'
-import { Context, ContractCallMock, GetPriceMock, runTask, Swap } from '@mimicprotocol/test-ts'
+import { Context, EvmCallQueryMock, runTask, Swap, TokenPriceQueryMock } from '@mimicprotocol/test-ts'
 import { expect } from 'chai'
 import { Interface } from 'ethers'
 
@@ -38,18 +38,18 @@ describe('Swap Task', () => {
   const slippageFactor = bpsDenominator - BigInt(inputs.slippageBps)
   const expectedMinAmountOut = (expectedAmountOut * slippageFactor) / bpsDenominator
 
-  const prices: GetPriceMock[] = [
+  const prices: TokenPriceQueryMock[] = [
     {
-      request: { token: inputs.tokenIn, chainId: inputs.sourceChainId },
+      request: { token: { address: inputs.tokenIn, chainId: inputs.sourceChainId } },
       response: [priceTokenIn.toString()], // 1 USD
     },
     {
-      request: { token: inputs.tokenOut, chainId: inputs.destinationChainId },
+      request: { token: { address: inputs.tokenOut, chainId: inputs.destinationChainId } },
       response: [priceTokenOut.toString()], // 2 USD
     },
   ]
 
-  const calls: ContractCallMock[] = [
+  const calls: EvmCallQueryMock[] = [
     // token in
     {
       request: {
