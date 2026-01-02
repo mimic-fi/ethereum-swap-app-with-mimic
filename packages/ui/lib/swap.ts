@@ -35,9 +35,9 @@ export async function swap(params: SwapParams): Promise<Config> {
   const tokenOut = TOKENS[destinationChain]?.[destinationToken]
   if (!tokenOut) throw new Error(`Unsupported token out ${destinationToken} on chain ${destinationChain}`)
 
-  const cron = `${new Date().getMinutes()} * * * *`
+  const cron = `${new Date(Date.now() + 60 * 1000).getMinutes()} * * * *`
   const delta = `${TASK_EXECUTION_DELTA_MINUTES}m`
-  const endDate = Date.now() + (TASK_EXECUTION_DELTA_MINUTES + 1) * 60 * 1000
+  const endDate = Date.now() + (TASK_EXECUTION_DELTA_MINUTES + 2) * 60 * 1000
   const description = `Swap ${sourceAmount} ${sourceToken} on ${sourceChainName} for ${destinationToken} on ${destinationChainName} with ${slippage}% slippage`
   const manifest = await sdk().tasks.getManifest(TASK_CID)
 
