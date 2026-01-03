@@ -2,9 +2,7 @@ import { fp } from '@mimicprotocol/sdk'
 
 import { TOKENS } from '@/lib/tokens'
 import { CHAIN_IDS } from '@/lib/chains'
-
-const BPS_DECIMALS = 2
-const BPS_DENOMINATOR = 10_000n
+import { BPS_DECIMALS, BPS_DENOMINATOR } from '@/lib/constants'
 
 interface EstimateParams {
   sourceChain: string
