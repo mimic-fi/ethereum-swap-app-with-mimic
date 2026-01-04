@@ -4,9 +4,8 @@ import { useEffect, useState } from 'react'
 import { Card } from '@/components/ui/card'
 import { ExternalLink, Loader2 } from 'lucide-react'
 import { findExecutions, Execution } from '@/lib/executions'
+import { capitalize } from '@/lib/utils'
 import { useAccount } from 'wagmi'
-
-const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1)
 
 export function History() {
   const { address, isConnected } = useAccount()
@@ -64,7 +63,7 @@ export function History() {
       <Card className="w-full max-w-2xl py-6 bg-card border-border">
         <div className="text-center py-8">
           <p className="text-muted-foreground">
-            {isConnected ? 'Please connect your wallet' : 'No swaps executed yet'}
+            {isConnected ? 'No swaps executed yet' : 'Please connect your wallet'}
           </p>
         </div>
       </Card>

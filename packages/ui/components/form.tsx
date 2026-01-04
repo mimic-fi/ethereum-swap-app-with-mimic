@@ -12,6 +12,7 @@ import { TokenSelector } from '@/components/token-selector'
 import { ArrowDownIcon, Settings } from 'lucide-react'
 import { estimate, EstimateResult } from '@/lib/estimate'
 import { swap } from '@/lib/swap'
+import { fetchTokenBalance } from '@/lib/balance'
 import { useToast } from '@/hooks/use-toast'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { TOKENS } from '@/lib/tokens'
@@ -22,17 +23,19 @@ export function Form() {
   const { toast } = useToast()
   const { address, isConnected } = useAccount()
   const wagmiConfig = useConfig()
-  const [sourceChain, setSourceChain] = useState('arbitrum')
+  const [sourceChain, setSourceChain] = useState('base')
   const [destinationChain, setDestinationChain] = useState('base')
-  const [sourceToken, setSourceToken] = useState('USDC')
-  const [destinationToken, setDestinationToken] = useState('ETH')
+  const [sourceToken, setSourceToken] = useState('WETH')
+  const [destinationToken, setDestinationToken] = useState('USDC')
   const [sourceAmount, setSourceAmount] = useState('')
-  const [slippage, setSlippage] = useState('0.5')
+  const [slippage, setSlippage] = useState('1.0')
   const [isLoading, setIsLoading] = useState(false)
   const [estimation, setEstimation] = useState<EstimateResult | null>(null)
   const [isEstimating, setIsEstimating] = useState(false)
   const [estimationError, setEstimationError] = useState<string | null>(null)
   const [settingsOpen, setSettingsOpen] = useState(false)
+  const [maxBalance, setMaxBalance] = useState<string | null>(null)
+  const [isBalanceLoading, setIsBalanceLoading] = useState(false)
 
   useEffect(() => {
     const tokens = Object.keys(TOKENS[sourceChain] ?? {})
@@ -88,6 +91,29 @@ export function Form() {
     return () => clearTimeout(timeoutId)
   }, [sourceAmount, sourceToken, destinationToken, sourceChain, destinationChain, slippage])
 
+  useEffect(() => {
+    const getMaxTokenBalance = async () => {
+      if (!isConnected || !address) {
+        setMaxBalance(null)
+        return
+      }
+
+      setIsBalanceLoading(true)
+      try {
+        const balance = await fetchTokenBalance({ chain: sourceChain, token: sourceToken, owner: address })
+        setMaxBalance(balance)
+      } catch (e) {
+        console.error('Balance fetch error', e)
+        setMaxBalance(null)
+      } finally {
+        setIsBalanceLoading(false)
+      }
+    }
+
+    const timeout = setTimeout(getMaxTokenBalance, 250)
+    return () => clearTimeout(timeout)
+  }, [sourceChain, sourceToken, address, isConnected])
+
   const handleSwitch = () => {
     const tempChain = sourceChain
     const tempToken = sourceToken
@@ -99,6 +125,7 @@ export function Form() {
 
     setSourceAmount('')
     setEstimation(null)
+    setMaxBalance(null)
   }
 
   const handleSwap = async () => {
@@ -214,6 +241,28 @@ export function Form() {
                 onChange={(e) => setSourceAmount(e.target.value)}
                 className="h-12 bg-secondary/50 border-border text-lg text-right no-spinner"
               />
+            </div>
+          </div>
+          <div className="flex justify-end">
+            <div className="w-56 text-xs text-muted-foreground text-right pr-2">
+              {isConnected ? (
+                isBalanceLoading ? (
+                  'Fetching balance…'
+                ) : maxBalance ? (
+                  <button
+                    type="button"
+                    onClick={() => setSourceAmount(maxBalance)}
+                    className="hover:text-foreground transition-colors"
+                    title="Use max balance"
+                  >
+                    Max {maxBalance}
+                  </button>
+                ) : (
+                  '.'
+                )
+              ) : (
+                '.'
+              )}
             </div>
           </div>
         </div>

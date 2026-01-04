@@ -3,6 +3,7 @@ import { fp } from '@mimicprotocol/sdk'
 import { TOKENS } from '@/lib/tokens'
 import { CHAIN_IDS } from '@/lib/chains'
 import { BPS_DECIMALS, BPS_DENOMINATOR } from '@/lib/constants'
+import { toStringDecimal } from '@/lib/utils'
 
 interface EstimateParams {
   sourceChain: string
@@ -65,17 +66,4 @@ async function fetchUsdPrice(params: { chainId: number; address: string }): Prom
 
   const data = await response.json()
   return BigInt(data.price)
-}
-
-function toStringDecimal(value: bigint, decimals: number, precision = 6): string {
-  const isNegative = value < 0n
-  const absolute = isNegative ? -value : value
-
-  const base = 10n ** BigInt(decimals)
-  const whole = absolute / base
-  const fraction = absolute % base
-
-  const decimalPart = fraction.toString().padStart(decimals, '0').slice(0, precision).replace(/0+$/, '')
-  const result = decimalPart ? `${whole.toString()}.${decimalPart}` : whole.toString()
-  return isNegative ? `-${result}` : result
 }
