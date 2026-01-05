@@ -1,6 +1,7 @@
 'use client'
 
 import { useAccount, useConfig } from 'wagmi'
+import { getBytecode } from '@wagmi/core'
 import { useState, useEffect } from 'react'
 import { Config } from '@mimicprotocol/sdk'
 import { Card } from '@/components/ui/card'
@@ -15,14 +16,17 @@ import { swap } from '@/lib/swap'
 import { fetchTokenBalance } from '@/lib/balance'
 import { useToast } from '@/hooks/use-toast'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
+import { CHAIN_IDS } from '@/lib/chains'
 import { TOKENS } from '@/lib/tokens'
 import { WagmiSigner } from '@/lib/wagmi-signer'
 import { ToastAction } from '@/components/ui/toast'
+import { EIP7702_PREFIX } from '@/lib/constants'
 
 export function Form() {
   const { toast } = useToast()
   const { address, isConnected } = useAccount()
   const wagmiConfig = useConfig()
+
   const [sourceChain, setSourceChain] = useState('base')
   const [destinationChain, setDestinationChain] = useState('base')
   const [sourceToken, setSourceToken] = useState('WETH')
@@ -36,6 +40,8 @@ export function Form() {
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [maxBalance, setMaxBalance] = useState<string | null>(null)
   const [isBalanceLoading, setIsBalanceLoading] = useState(false)
+  const [isSmartAccount, setIsSmartAccount] = useState<boolean | null>(null)
+  const [isSmartAccountLoading, setIsSmartAccountLoading] = useState(true)
 
   useEffect(() => {
     const tokens = Object.keys(TOKENS[sourceChain] ?? {})
@@ -114,6 +120,37 @@ export function Form() {
     return () => clearTimeout(timeout)
   }, [sourceChain, sourceToken, address, isConnected])
 
+  useEffect(() => {
+    let cancelled = false
+
+    async function check() {
+      if (!isConnected || !address) {
+        setIsSmartAccount(null)
+      } else {
+        setIsSmartAccountLoading(true)
+        try {
+          const chainId = CHAIN_IDS[sourceChain]?.id
+          if (!chainId) {
+            if (!cancelled) setIsSmartAccount(null)
+          } else {
+            const code = await getBytecode(wagmiConfig, { chainId, address })
+            if (!cancelled) setIsSmartAccount(!!code && code.toLowerCase().startsWith(EIP7702_PREFIX))
+          }
+        } catch (error) {
+          console.error('Delegation check error', error)
+          if (!cancelled) setIsSmartAccount(null)
+        } finally {
+          if (!cancelled) setIsSmartAccountLoading(false)
+        }
+      }
+    }
+
+    check()
+    return () => {
+      cancelled = true
+    }
+  }, [isConnected, address, sourceChain, wagmiConfig])
+
   const handleSwitch = () => {
     const tempChain = sourceChain
     const tempToken = sourceToken
@@ -184,8 +221,26 @@ export function Form() {
   }
 
   return (
-    <Card className="w-full max-w-2xl py-6 bg-card border-border">
-      <div className="max-w-2xl mx-auto space-y-6">
+    <Card className="w-full max-w-2xl p-6 bg-card border-border">
+      <div className="space-y-6">
+        {isConnected && !isSmartAccountLoading && !isSmartAccount && (
+          <div className="w-full rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+            This app can be used only for <span className="font-semibold">EIP-7702 delegated</span> accounts.
+          </div>
+        )}
+
+        {isConnected && !isSmartAccountLoading && isSmartAccount && (
+          <div className="w-full rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-500">
+            <span className="font-semibold">EIP-7702 smart account checked.</span>
+          </div>
+        )}
+
+        {isConnected && isSmartAccountLoading && (
+          <div className="rounded-xl border border-border bg-secondary/30 px-4 py-3 text-sm text-muted-foreground">
+            Checking EIP-7702 delegation…
+          </div>
+        )}
+
         <div className="space-y-3">
           <div className="flex items-end justify-between">
             <Label className="text-muted-foreground">From</Label>
@@ -233,7 +288,7 @@ export function Form() {
             <div className="w-36 shrink-0">
               <TokenSelector chain={sourceChain} value={sourceToken} onChange={setSourceToken} />
             </div>
-            <div className="w-56 shrink-0">
+            <div className="flex-1 min-w-0">
               <Input
                 type="number"
                 placeholder="0.0"
@@ -286,7 +341,7 @@ export function Form() {
             <div className="w-36 shrink-0">
               <TokenSelector chain={destinationChain} value={destinationToken} onChange={setDestinationToken} />
             </div>
-            <div className="w-56 shrink-0">
+            <div className="flex-1 min-w-0">
               <Input
                 type="text"
                 placeholder="0.0"
@@ -314,9 +369,19 @@ export function Form() {
           size="lg"
           className="w-full text-lg h-14 bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700"
           onClick={handleSwap}
-          disabled={isLoading || isEstimating || !estimation || !isConnected}
+          disabled={isLoading || isEstimating || !estimation || !isConnected || !isSmartAccount}
         >
-          {isLoading ? 'Creating Swap...' : isEstimating ? 'Estimating...' : isConnected ? 'Swap' : 'Connect wallet'}
+          {isLoading
+            ? 'Creating Swap...'
+            : isEstimating
+              ? 'Estimating...'
+              : !isConnected
+                ? 'Connect wallet'
+                : isSmartAccountLoading
+                  ? 'Checking account...'
+                  : !isSmartAccount
+                    ? 'EIP-7702 required'
+                    : 'Swap'}
         </Button>
 
         <div className="text-xs text-muted-foreground text-center">
