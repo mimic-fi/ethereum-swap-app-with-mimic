@@ -1,41 +1,39 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import { Card } from '@/components/ui/card'
 import { ExternalLink, Loader2 } from 'lucide-react'
 import { findExecutions, Execution } from '@/lib/executions'
 import { capitalize } from '@/lib/utils'
 import { useAccount } from 'wagmi'
 
+function getResultColor(result: string): string {
+  if (result === 'succeeded') return 'text-green-500'
+  if (['failed', 'discarded', 'expired'].includes(result)) return 'text-red-500'
+  return 'text-violet-500'
+}
+
+function getResultIcon(result: string): string {
+  if (result === 'succeeded') return '✓'
+  if (['failed', 'discarded', 'expired'].includes(result)) return '✗'
+  return '-'
+}
+
 export function History() {
   const { address, isConnected } = useAccount()
-  const [swaps, setSwaps] = useState<Execution[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
 
-  useEffect(() => {
-    const fetchSwaps = async () => {
-      try {
-        setError(null)
-
-        if (!isConnected || !address) {
-          setSwaps([])
-          return
-        }
-
-        setIsLoading(true)
-        const executions = await findExecutions(address)
-        setSwaps(executions)
-      } catch (error) {
-        console.error('Error fetching swap history:', error)
-        setError(error instanceof Error ? error.message : 'Failed to load swaps history')
-      } finally {
-        setIsLoading(false)
-      }
-    }
-
-    fetchSwaps()
-  }, [address, isConnected])
+  const {
+    data: swaps = [],
+    isLoading,
+    error,
+  } = useQuery<Execution[], Error>({
+    queryKey: ['executions', address],
+    queryFn: () => findExecutions(address!),
+    enabled: isConnected && !!address,
+    refetchInterval: 5_000,
+    refetchIntervalInBackground: true,
+    staleTime: 0,
+  })
 
   if (isLoading) {
     return (
@@ -52,7 +50,7 @@ export function History() {
     return (
       <Card className="w-full max-w-2xl py-6 bg-card border-border">
         <div className="text-center py-8">
-          <p className="text-destructive">{error}</p>
+          <p className="text-destructive">{error.message ?? 'Failed to load swaps history'}</p>
         </div>
       </Card>
     )
@@ -86,14 +84,8 @@ export function History() {
               </div>
               <div className="flex items-center gap-4">
                 <div className="text-right">
-                  <div
-                    className={`text-sm font-medium ${swap.result === 'succeeded' ? 'text-green-500' : 'text-red-500'}`}
-                  >
-                    {swap.result === 'succeeded'
-                      ? '✓ Success'
-                      : ['failed', 'discarded', 'expired'].includes(swap.result)
-                        ? '✗ Failed'
-                        : `- ${capitalize(swap.result)}`}
+                  <div className={`text-sm font-medium ${getResultColor(swap.result)}`}>
+                    {getResultIcon(swap.result)} {capitalize(swap.result)}
                   </div>
                 </div>
                 <a

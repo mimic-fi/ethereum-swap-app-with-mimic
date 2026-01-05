@@ -1,11 +1,10 @@
 import sdk from '@/lib/sdk'
 import { TASK_CID } from '@/lib/constants'
-import { IntentStatus } from '@mimicprotocol/sdk'
 
 export interface Execution {
   description: string
   createdAt: Date
-  result: IntentStatus
+  result: string
   url: string
 }
 
@@ -18,7 +17,7 @@ export async function findExecutions(signer: string): Promise<Execution[]> {
         return {
           createdAt: config.createdAt,
           description: config.description,
-          result: 'failed' as IntentStatus,
+          result: sdk().configs.isExpired(config) ? 'expired' : 'waiting',
           url: `https://protocol.mimic.fi/configs/${config.sig}`,
         }
 

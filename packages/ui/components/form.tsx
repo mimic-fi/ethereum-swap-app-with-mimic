@@ -28,7 +28,7 @@ export function Form() {
   const [sourceToken, setSourceToken] = useState('WETH')
   const [destinationToken, setDestinationToken] = useState('USDC')
   const [sourceAmount, setSourceAmount] = useState('')
-  const [slippage, setSlippage] = useState('1.0')
+  const [slippage, setSlippage] = useState('2.0')
   const [isLoading, setIsLoading] = useState(false)
   const [estimation, setEstimation] = useState<EstimateResult | null>(null)
   const [isEstimating, setIsEstimating] = useState(false)
@@ -211,7 +211,7 @@ export function Form() {
                         placeholder="0.5"
                         value={slippage}
                         onChange={(e) => setSlippage(e.target.value)}
-                        className="h-11 bg-secondary/50 border-border no-spinner"
+                        className="h-11 bg-secondary/50 border-border"
                         step="0.1"
                         min="0"
                         max="100"
@@ -239,7 +239,7 @@ export function Form() {
                 placeholder="0.0"
                 value={sourceAmount}
                 onChange={(e) => setSourceAmount(e.target.value)}
-                className="h-12 bg-secondary/50 border-border text-lg text-right no-spinner"
+                className="h-12 bg-secondary/50 border-border text-lg text-right"
               />
             </div>
           </div>
@@ -300,7 +300,7 @@ export function Form() {
                         : ''
                 }
                 disabled
-                className="h-12 bg-secondary/50 border-border text-lg text-right no-spinner"
+                className="h-12 bg-secondary/50 border-border text-lg text-right"
               />
             </div>
           </div>
@@ -316,7 +316,7 @@ export function Form() {
           onClick={handleSwap}
           disabled={isLoading || isEstimating || !estimation || !isConnected}
         >
-          {isLoading ? 'Creating Swap...' : isEstimating ? 'Estimating...' : 'Swap'}
+          {isLoading ? 'Creating Swap...' : isEstimating ? 'Estimating...' : isConnected ? 'Swap' : 'Connect wallet'}
         </Button>
 
         <div className="text-xs text-muted-foreground text-center">
