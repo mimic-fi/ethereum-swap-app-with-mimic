@@ -13,13 +13,14 @@ export async function findExecutions(signer: string): Promise<Execution[]> {
   return Promise.all(
     configs.map(async (config) => {
       const executions = await sdk().executions.get({ configSig: config.sig })
-      if (executions.length == 0 || executions[0].outputs.length == 0)
+      if (executions.length == 0 || executions[0].outputs.length == 0) {
         return {
           createdAt: config.createdAt,
           description: config.description,
-          result: sdk().configs.isExpired(config) ? 'expired' : 'waiting',
+          result: config.trigger.endDate < Date.now() && sdk().configs.isExpired(config) ? 'expired' : 'waiting',
           url: `https://protocol.mimic.fi/configs/${config.sig}`,
         }
+      }
 
       const output = executions[0].outputs[0]
       const intent = await sdk().intents.getByHash(output.hash)

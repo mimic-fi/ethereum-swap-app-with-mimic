@@ -1084,10 +1084,10 @@
     "@mimicprotocol/runner-node-win32-arm64-msvc" "0.0.1-rc.13"
     "@mimicprotocol/runner-node-win32-x64-msvc" "0.0.1-rc.13"
 
-"@mimicprotocol/sdk@0.0.1-rc.27", "@mimicprotocol/sdk@^0.0.1-rc.27":
-  version "0.0.1-rc.27"
-  resolved "https://registry.yarnpkg.com/@mimicprotocol/sdk/-/sdk-0.0.1-rc.27.tgz#33147b0bd11b4f37b75c0d9b5c80dd67d18191db"
-  integrity sha512-2VFSU8rG5m4ailfsoy2gqYxcfrWFzxNDwnSqLQ2NEX0jvZSirFDZMzdCLPo+l9CRknGwohhcA5w0DgpebqULTw==
+"@mimicprotocol/sdk@0.0.1-rc.29", "@mimicprotocol/sdk@^0.0.1-rc.29":
+  version "0.0.1-rc.29"
+  resolved "https://registry.yarnpkg.com/@mimicprotocol/sdk/-/sdk-0.0.1-rc.29.tgz#3173521a27fe20149bbe0a212f40547b5917ec12"
+  integrity sha512-pmljDBQaLKm0qojOic58zRH3srBIyRIUVjqpJqRvgZmQretAEVd6CXcBHZ9gDod+EX6OpNjfculEAAswBkGCYA==
   dependencies:
     "@solana/web3.js" "^1.98.4"
     borsh "^2.0.0"
@@ -1095,10 +1095,10 @@
     ethers "^6.13.5"
     zod "^3.23.8"
 
-"@mimicprotocol/sdk@^0.0.1-rc.25":
-  version "0.0.1-rc.25"
-  resolved "https://registry.yarnpkg.com/@mimicprotocol/sdk/-/sdk-0.0.1-rc.25.tgz#ddfecd87c5c18f86258630d21ad747dfce7fc3e6"
-  integrity sha512-g8BdWBjleq0B7JrvBvMur6qKtNadXqylbBg9PFypVPqjqQV+KsM1PMZLtmzKuFILcmcb758UWFesMoOPwNz45Q==
+"@mimicprotocol/sdk@^0.0.1-rc.27":
+  version "0.0.1-rc.27"
+  resolved "https://registry.yarnpkg.com/@mimicprotocol/sdk/-/sdk-0.0.1-rc.27.tgz#33147b0bd11b4f37b75c0d9b5c80dd67d18191db"
+  integrity sha512-2VFSU8rG5m4ailfsoy2gqYxcfrWFzxNDwnSqLQ2NEX0jvZSirFDZMzdCLPo+l9CRknGwohhcA5w0DgpebqULTw==
   dependencies:
     "@solana/web3.js" "^1.98.4"
     borsh "^2.0.0"

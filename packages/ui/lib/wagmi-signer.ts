@@ -9,6 +9,10 @@ export class WagmiSigner implements Signer {
     private readonly config: Config
   ) {}
 
+  getAddress(): Promise<Address> {
+    return Promise.resolve(this.address)
+  }
+
   signMessage(message: string): Promise<Signature> {
     return signMessage(this.config, { account: this.address as `0x${string}`, message })
   }

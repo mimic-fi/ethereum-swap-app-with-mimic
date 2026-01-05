@@ -1,7 +1,6 @@
 'use client'
 
 import { useAccount, useConfig } from 'wagmi'
-import { getBytecode } from '@wagmi/core'
 import { useState, useEffect } from 'react'
 import { Config } from '@mimicprotocol/sdk'
 import { Card } from '@/components/ui/card'
@@ -13,20 +12,15 @@ import { TokenSelector } from '@/components/token-selector'
 import { ArrowDownIcon, Settings } from 'lucide-react'
 import { estimate, EstimateResult } from '@/lib/estimate'
 import { swap } from '@/lib/swap'
-import { fetchTokenBalance } from '@/lib/balance'
 import { useToast } from '@/hooks/use-toast'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
-import { CHAIN_IDS } from '@/lib/chains'
 import { TOKENS } from '@/lib/tokens'
 import { WagmiSigner } from '@/lib/wagmi-signer'
 import { ToastAction } from '@/components/ui/toast'
-import { EIP7702_PREFIX } from '@/lib/constants'
+import { useSmartAccountCheck } from '@/hooks/use-smart-account-check'
+import { useTokenBalance } from '@/hooks/use-token-balance'
 
 export function Form() {
-  const { toast } = useToast()
-  const { address, isConnected } = useAccount()
-  const wagmiConfig = useConfig()
-
   const [sourceChain, setSourceChain] = useState('base')
   const [destinationChain, setDestinationChain] = useState('base')
   const [sourceToken, setSourceToken] = useState('WETH')
@@ -38,10 +32,12 @@ export function Form() {
   const [isEstimating, setIsEstimating] = useState(false)
   const [estimationError, setEstimationError] = useState<string | null>(null)
   const [settingsOpen, setSettingsOpen] = useState(false)
-  const [maxBalance, setMaxBalance] = useState<string | null>(null)
-  const [isBalanceLoading, setIsBalanceLoading] = useState(false)
-  const [isSmartAccount, setIsSmartAccount] = useState<boolean | null>(null)
-  const [isSmartAccountLoading, setIsSmartAccountLoading] = useState(true)
+
+  const { toast } = useToast()
+  const { address, isConnected } = useAccount()
+  const wagmiConfig = useConfig()
+  const { tokenBalance, isTokenBalanceLoading } = useTokenBalance(sourceChain, sourceToken)
+  const { isSmartAccount, isSmartAccountLoading } = useSmartAccountCheck(sourceChain)
 
   useEffect(() => {
     const tokens = Object.keys(TOKENS[sourceChain] ?? {})
@@ -97,60 +93,6 @@ export function Form() {
     return () => clearTimeout(timeoutId)
   }, [sourceAmount, sourceToken, destinationToken, sourceChain, destinationChain, slippage])
 
-  useEffect(() => {
-    const getMaxTokenBalance = async () => {
-      if (!isConnected || !address) {
-        setMaxBalance(null)
-        return
-      }
-
-      setIsBalanceLoading(true)
-      try {
-        const balance = await fetchTokenBalance({ chain: sourceChain, token: sourceToken, owner: address })
-        setMaxBalance(balance)
-      } catch (e) {
-        console.error('Balance fetch error', e)
-        setMaxBalance(null)
-      } finally {
-        setIsBalanceLoading(false)
-      }
-    }
-
-    const timeout = setTimeout(getMaxTokenBalance, 250)
-    return () => clearTimeout(timeout)
-  }, [sourceChain, sourceToken, address, isConnected])
-
-  useEffect(() => {
-    let cancelled = false
-
-    async function check() {
-      if (!isConnected || !address) {
-        setIsSmartAccount(null)
-      } else {
-        setIsSmartAccountLoading(true)
-        try {
-          const chainId = CHAIN_IDS[sourceChain]?.id
-          if (!chainId) {
-            if (!cancelled) setIsSmartAccount(null)
-          } else {
-            const code = await getBytecode(wagmiConfig, { chainId, address })
-            if (!cancelled) setIsSmartAccount(!!code && code.toLowerCase().startsWith(EIP7702_PREFIX))
-          }
-        } catch (error) {
-          console.error('Delegation check error', error)
-          if (!cancelled) setIsSmartAccount(null)
-        } finally {
-          if (!cancelled) setIsSmartAccountLoading(false)
-        }
-      }
-    }
-
-    check()
-    return () => {
-      cancelled = true
-    }
-  }, [isConnected, address, sourceChain, wagmiConfig])
-
   const handleSwitch = () => {
     const tempChain = sourceChain
     const tempToken = sourceToken
@@ -162,7 +104,6 @@ export function Form() {
 
     setSourceAmount('')
     setEstimation(null)
-    setMaxBalance(null)
   }
 
   const handleSwap = async () => {
@@ -301,16 +242,16 @@ export function Form() {
           <div className="flex justify-end">
             <div className="w-56 text-xs text-muted-foreground text-right pr-2">
               {isConnected ? (
-                isBalanceLoading ? (
+                isTokenBalanceLoading ? (
                   'Fetching balance…'
-                ) : maxBalance ? (
+                ) : tokenBalance ? (
                   <button
                     type="button"
-                    onClick={() => setSourceAmount(maxBalance)}
+                    onClick={() => setSourceAmount(tokenBalance)}
                     className="hover:text-foreground transition-colors"
                     title="Use max balance"
                   >
-                    Max {maxBalance}
+                    Max {tokenBalance}
                   </button>
                 ) : (
                   '.'
