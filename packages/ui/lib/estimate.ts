@@ -1,16 +1,16 @@
 import { fp } from '@mimicprotocol/sdk'
 
-import { TOKENS } from '@/lib/tokens'
-import { CHAIN_IDS } from '@/lib/chains'
+import { Token } from '@/lib/tokens'
+import { Chain } from '@/lib/chains'
 import { BPS_DECIMALS, BPS_DENOMINATOR } from '@/lib/constants'
 import { toStringDecimal } from '@/lib/utils'
 
 interface EstimateParams {
-  sourceChain: string
-  sourceToken: string
+  sourceChain: Chain
+  sourceToken: Token
   sourceAmount: string
-  destinationChain: string
-  destinationToken: string
+  destinationChain: Chain
+  destinationToken: Token
   slippage: string
 }
 
@@ -22,33 +22,21 @@ export interface EstimateResult {
 export async function estimate(params: EstimateParams): Promise<EstimateResult> {
   const { sourceChain, sourceToken, destinationChain, destinationToken, sourceAmount, slippage } = params
 
-  const sourceChainId = CHAIN_IDS[sourceChain]?.id
-  if (!sourceChainId) throw new Error(`Unsupported source chain ${sourceChain}`)
-
-  const destinationChainId = CHAIN_IDS[destinationChain]?.id
-  if (!destinationChainId) throw new Error(`Unsupported destination chain ${destinationChain}`)
-
-  const tokenIn = TOKENS[sourceChain]?.[sourceToken]
-  if (!tokenIn) throw new Error(`Unsupported token in ${sourceToken} on chain ${sourceChain}`)
-
-  const tokenOut = TOKENS[destinationChain]?.[destinationToken]
-  if (!tokenOut) throw new Error(`Unsupported token out ${destinationToken} on chain ${destinationChain}`)
-
-  const amountIn = fp(sourceAmount, tokenIn.decimals)
+  const amountIn = fp(sourceAmount, sourceToken.decimals)
   const slippageBps = fp(slippage, BPS_DECIMALS)
 
   const [priceIn, priceOut] = await Promise.all([
-    fetchUsdPrice({ chainId: sourceChainId, address: tokenIn.address }),
-    fetchUsdPrice({ chainId: destinationChainId, address: tokenOut.address }),
+    fetchUsdPrice({ chainId: sourceChain.id, address: sourceToken.address }),
+    fetchUsdPrice({ chainId: destinationChain.id, address: destinationToken.address }),
   ])
 
-  const expectedAmountOut = (amountIn * priceIn * fp(1, tokenOut.decimals)) / (priceOut * fp(1, tokenIn.decimals))
+  const amountOut = (amountIn * priceIn * fp(1, destinationToken.decimals)) / (priceOut * fp(1, sourceToken.decimals))
   const slippageFactor = BPS_DENOMINATOR - slippageBps
-  const minAmountOut = (expectedAmountOut * slippageFactor) / BPS_DENOMINATOR
+  const minAmountOut = (amountOut * slippageFactor) / BPS_DENOMINATOR
 
   return {
-    expectedAmountOut: toStringDecimal(expectedAmountOut, tokenOut.decimals),
-    minAmountOut: toStringDecimal(minAmountOut, tokenOut.decimals),
+    expectedAmountOut: toStringDecimal(amountOut, destinationToken.decimals),
+    minAmountOut: toStringDecimal(minAmountOut, destinationToken.decimals),
   }
 }
 

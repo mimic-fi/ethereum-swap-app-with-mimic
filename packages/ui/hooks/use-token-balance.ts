@@ -3,8 +3,10 @@
 import { useEffect, useState } from 'react'
 import { useAccount } from 'wagmi'
 import { fetchTokenBalance } from '@/lib/balance'
+import { Chain } from '@/lib/chains'
+import { Token } from '@/lib/tokens'
 
-export function useTokenBalance(sourceChain: string, sourceToken: string, debounceMs = 250) {
+export function useTokenBalance(chain: Chain, token: Token, debounceMs = 250) {
   const { address, isConnected } = useAccount()
   const [tokenBalance, setTokenBalance] = useState<string | null>(null)
   const [isTokenBalanceLoading, setIsTokenBalanceLoading] = useState(false)
@@ -21,7 +23,7 @@ export function useTokenBalance(sourceChain: string, sourceToken: string, deboun
 
       setIsTokenBalanceLoading(true)
       try {
-        const balance = await fetchTokenBalance({ chain: sourceChain, token: sourceToken, owner: address })
+        const balance = await fetchTokenBalance({ chain, token, owner: address })
         if (!cancelled) setTokenBalance(balance)
       } catch (error) {
         console.error('Token balance fetch error', error)
@@ -36,7 +38,7 @@ export function useTokenBalance(sourceChain: string, sourceToken: string, deboun
       cancelled = true
       clearTimeout(timeout)
     }
-  }, [sourceChain, sourceToken, isConnected, address, debounceMs])
+  }, [chain, token, isConnected, address, debounceMs])
 
   return { tokenBalance, isTokenBalanceLoading }
 }

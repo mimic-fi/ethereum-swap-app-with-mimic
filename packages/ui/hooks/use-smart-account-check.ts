@@ -3,10 +3,10 @@
 import { useEffect, useState } from 'react'
 import { useAccount, useConfig } from 'wagmi'
 import { getBytecode } from '@wagmi/core'
-import { CHAIN_IDS } from '@/lib/chains'
+import { Chain } from '@/lib/chains'
 import { EIP7702_PREFIX } from '@/lib/constants'
 
-export function useSmartAccountCheck(sourceChain: string) {
+export function useSmartAccountCheck(chain: Chain) {
   const { address, isConnected } = useAccount()
   const wagmiConfig = useConfig()
 
@@ -26,13 +26,7 @@ export function useSmartAccountCheck(sourceChain: string) {
       setIsSmartAccountLoading(true)
 
       try {
-        const chainId = CHAIN_IDS[sourceChain]?.id
-        if (!chainId) {
-          if (!cancelled) setIsSmartAccount(null)
-          return
-        }
-
-        const code = await getBytecode(wagmiConfig, { chainId, address })
+        const code = await getBytecode(wagmiConfig, { chainId: chain.id, address })
         const delegated = !!code && code.toLowerCase().startsWith(EIP7702_PREFIX)
         if (!cancelled) setIsSmartAccount(delegated)
       } catch (err) {
@@ -47,7 +41,7 @@ export function useSmartAccountCheck(sourceChain: string) {
     return () => {
       cancelled = true
     }
-  }, [isConnected, address, sourceChain, wagmiConfig])
+  }, [isConnected, address, chain, wagmiConfig])
 
   return { isSmartAccount, isSmartAccountLoading }
 }

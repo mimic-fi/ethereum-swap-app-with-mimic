@@ -1,32 +1,30 @@
 'use client'
 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { TOKENS } from '@/lib/tokens'
+import { TOKENS, Token } from '@/lib/tokens'
+import type { Chain } from '@/lib/chains'
 
-type ChainKey = keyof typeof TOKENS
-type TokenKey<C extends ChainKey> = keyof (typeof TOKENS)[C]
-
-interface TokenSelectorProps<C extends ChainKey = ChainKey> {
-  chain: C
-  value: TokenKey<C>
-  onChange: (value: TokenKey<C>) => void
+interface TokenSelectorProps {
+  chain: Chain
+  value: Token
+  onChange: (token: Token) => void
 }
 
-export function TokenSelector<C extends ChainKey>({ chain, value, onChange }: TokenSelectorProps<C>) {
-  const tokens = TOKENS[chain]
+export function TokenSelector({ chain, value, onChange }: TokenSelectorProps) {
+  const chainKey = chain.key
 
   return (
-    <Select value={value as string} onValueChange={(v) => onChange(v as TokenKey<C>)}>
+    <Select value={value.symbol} onValueChange={(tokenSymbol) => onChange(TOKENS[chainKey][tokenSymbol])}>
       <SelectTrigger className="w-full h-12 bg-secondary/50 border-border">
         <SelectValue />
       </SelectTrigger>
 
       <SelectContent>
-        {(Object.keys(tokens) as TokenKey<C>[]).map((symbol) => (
-          <SelectItem key={symbol as string} value={symbol as string}>
+        {Object.keys(TOKENS[chainKey]).map((tokenSymbol) => (
+          <SelectItem key={tokenSymbol} value={tokenSymbol}>
             <div className="flex items-center gap-2">
               <div className="w-5 h-5 rounded-full bg-gradient-to-br from-violet-400 to-purple-500" />
-              <span className="font-medium">{symbol}</span>
+              <span className="font-medium">{tokenSymbol}</span>
             </div>
           </SelectItem>
         ))}

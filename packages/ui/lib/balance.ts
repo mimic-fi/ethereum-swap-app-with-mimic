@@ -1,10 +1,10 @@
-import { TOKENS } from '@/lib/tokens'
-import { CHAIN_IDS } from '@/lib/chains'
+import { Token } from '@/lib/tokens'
+import { Chain } from '@/lib/chains'
 import { hexToBigInt, pad32, toStringDecimal } from '@/lib/utils'
 
 type BalanceParams = {
-  chain: string
-  token: string
+  chain: Chain
+  token: Token
   owner: string
 }
 
@@ -17,19 +17,12 @@ function encodeBalanceOf(owner: string) {
 
 export async function fetchTokenBalance(params: BalanceParams): Promise<string> {
   const { chain, token, owner } = params
-
-  const chainId = CHAIN_IDS[chain]?.id
-  if (!chainId) throw new Error(`Unsupported source chain ${chain}`)
-
-  const address = TOKENS[chain]?.[token]?.address
-  if (!address) throw new Error(`Unsupported token ${token} on chain ${chain}`)
-
   const calldata = encodeBalanceOf(owner)
 
   const response = await fetch('/api/evm-call', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ chainId, address, data: calldata }),
+    body: JSON.stringify({ chainId: chain.id, address: token.address, data: calldata }),
   })
 
   if (!response.ok) {
@@ -39,5 +32,5 @@ export async function fetchTokenBalance(params: BalanceParams): Promise<string> 
 
   const { data: returnData } = (await response.json()) as { data: string }
   const balance = hexToBigInt(returnData)
-  return toStringDecimal(balance, TOKENS[chain]?.[token]?.decimals)
+  return toStringDecimal(balance, token.decimals)
 }

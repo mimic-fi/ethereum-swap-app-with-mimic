@@ -14,17 +14,18 @@ import { estimate, EstimateResult } from '@/lib/estimate'
 import { swap } from '@/lib/swap'
 import { useToast } from '@/hooks/use-toast'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
-import { TOKENS } from '@/lib/tokens'
+import { CHAINS, type Chain } from '@/lib/chains'
+import { TOKENS, type Token } from '@/lib/tokens'
 import { WagmiSigner } from '@/lib/wagmi-signer'
 import { ToastAction } from '@/components/ui/toast'
 import { useSmartAccountCheck } from '@/hooks/use-smart-account-check'
 import { useTokenBalance } from '@/hooks/use-token-balance'
 
 export function Form() {
-  const [sourceChain, setSourceChain] = useState('base')
-  const [destinationChain, setDestinationChain] = useState('base')
-  const [sourceToken, setSourceToken] = useState('WETH')
-  const [destinationToken, setDestinationToken] = useState('USDC')
+  const [sourceChain, setSourceChain] = useState<Chain>(CHAINS.base)
+  const [destinationChain, setDestinationChain] = useState<Chain>(CHAINS.base)
+  const [sourceToken, setSourceToken] = useState<Token>(TOKENS.base.WETH)
+  const [destinationToken, setDestinationToken] = useState<Token>(TOKENS.base.USDC)
   const [sourceAmount, setSourceAmount] = useState('')
   const [slippage, setSlippage] = useState('2.0')
   const [isLoading, setIsLoading] = useState(false)
@@ -40,16 +41,16 @@ export function Form() {
   const { isSmartAccount, isSmartAccountLoading } = useSmartAccountCheck(sourceChain)
 
   useEffect(() => {
-    const tokens = Object.keys(TOKENS[sourceChain] ?? {})
-    if (tokens.length === 0) return
-    if (!tokens.includes(sourceToken)) setSourceToken(tokens[0])
-  }, [sourceChain, sourceToken])
+    const tokens = TOKENS[sourceChain.key]
+    const firstSymbol = Object.keys(tokens ?? {})[0]
+    if (firstSymbol) setSourceToken(tokens[firstSymbol])
+  }, [sourceChain])
 
   useEffect(() => {
-    const tokens = Object.keys(TOKENS[destinationChain] ?? {})
-    if (tokens.length === 0) return
-    if (!tokens.includes(destinationToken)) setDestinationToken(tokens[0])
-  }, [destinationChain, destinationToken])
+    const tokens = TOKENS[destinationChain.key]
+    const firstSymbol = Object.keys(tokens ?? {})[0]
+    if (firstSymbol) setDestinationToken(tokens[firstSymbol])
+  }, [destinationChain])
 
   useEffect(() => {
     const estimateAmount = async () => {
@@ -301,7 +302,7 @@ export function Form() {
             </div>
           </div>
           <div className="text-xs text-muted-foreground text-right pr-2">
-            {estimation && !isEstimating ? `At least: ${estimation.minAmountOut} ${destinationToken}` : '.'}
+            {estimation && !isEstimating ? `At least: ${estimation.minAmountOut} ${destinationToken.symbol}` : '.'}
           </div>
           {estimationError && <div className="text-xs text-destructive text-right pr-2">{estimationError}</div>}
         </div>

@@ -1,4 +1,6 @@
-export const TOKENS: Record<string, Record<string, { address: string; decimals: number }>> = {
+import { ChainKey } from '@/lib/chains'
+
+export const TOKENS_DICTIONARY: Record<string, Record<string, { address: string; decimals: number }>> = {
   arbitrum: {
     USDC: { address: '0xaf88d065e77c8cC2239327C5EDb3A432268e5831', decimals: 6 },
     USDT: { address: '0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9', decimals: 6 },
@@ -35,3 +37,27 @@ export const TOKENS: Record<string, Record<string, { address: string; decimals: 
     WETH: { address: '0x4200000000000000000000000000000000000006', decimals: 18 },
   },
 }
+
+export type Token = {
+  address: string
+  decimals: number
+  symbol: string
+  chainKey: ChainKey
+}
+
+export const TOKENS = Object.keys(TOKENS_DICTIONARY).reduce(
+  (chains, chainKey) => {
+    const tokensForChain = TOKENS_DICTIONARY[chainKey]
+
+    chains[chainKey] = Object.keys(tokensForChain).reduce(
+      (tokens, symbol) => {
+        tokens[symbol] = { ...tokensForChain[symbol], symbol, chainKey }
+        return tokens
+      },
+      {} as Record<string, Token>
+    )
+
+    return chains
+  },
+  {} as Record<ChainKey, Record<string, Token>>
+)
