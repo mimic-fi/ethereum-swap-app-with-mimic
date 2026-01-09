@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { useAccount, useConfig } from 'wagmi'
 import { getBytecode } from '@wagmi/core'
 import { Chain } from '@/lib/chains'
-import { EIP7702_PREFIX } from '@/lib/constants'
+import { EIP7702_SMART_ACCOUNT } from '@/lib/constants'
 
 export function useSmartAccountCheck(chain: Chain) {
   const { address, isConnected } = useAccount()
@@ -27,7 +27,7 @@ export function useSmartAccountCheck(chain: Chain) {
 
       try {
         const code = await getBytecode(wagmiConfig, { chainId: chain.id, address })
-        const delegated = !!code && code.toLowerCase().startsWith(EIP7702_PREFIX)
+        const delegated = !!code && code.toLowerCase() == EIP7702_SMART_ACCOUNT
         if (!cancelled) setIsSmartAccount(delegated)
       } catch (err) {
         console.error('Delegation check error', err)

@@ -15,7 +15,7 @@ interface Props {
 
 export const metadata: Metadata = {
   title: 'Mimic Swap',
-  description: 'Seamless cross-chain token swaps powered by Mimic Protocol',
+  description: 'Seamless cross-chain token swaps powered by Mimic',
   generator: 'v0.app',
   icons: {
     icon: [
