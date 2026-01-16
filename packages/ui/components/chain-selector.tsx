@@ -12,14 +12,19 @@ export function ChainSelector({ value, onChange }: ChainSelectorProps) {
   return (
     <Select value={value.key} onValueChange={(chainKey) => onChange(CHAINS[chainKey as ChainKey])}>
       <SelectTrigger className="w-full h-12 bg-secondary/50 border-border">
-        <SelectValue />
+        <SelectValue>
+          <div className="flex items-center gap-2">
+            <img src={value.icon} alt={value.name} className="w-6 h-6 rounded-full" />
+            <span>{value.name}</span>
+          </div>
+        </SelectValue>
       </SelectTrigger>
 
       <SelectContent>
         {(Object.keys(CHAINS) as ChainKey[]).map((chainKey) => (
           <SelectItem key={chainKey} value={chainKey}>
             <div className="flex items-center gap-2">
-              <div className="w-6 h-6 rounded-full bg-gradient-to-br from-violet-500 to-purple-600" />
+              <img src={CHAINS[chainKey].icon} alt={CHAINS[chainKey].name} className="w-6 h-6 rounded-full" />
               <span>{CHAINS[chainKey].name}</span>
             </div>
           </SelectItem>
