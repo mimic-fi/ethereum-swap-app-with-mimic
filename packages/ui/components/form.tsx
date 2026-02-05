@@ -166,19 +166,32 @@ export function Form() {
       <div className="space-y-6">
         {isConnected && !isSmartAccountLoading && !isSmartAccount && (
           <div className="w-full rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
-            This app can be used only for <span className="font-semibold">EIP-7702 delegated</span> accounts.
+            <span className="font-semibold">This app is only meant to be used with Mimic EIP-7702 smart accounts.</span>{' '}
+            <br />
+            <span className="text-destructive/90">
+              You can upgrade your existing wallet by following{' '}
+              <a
+                href="https://docs.mimic.fi/examples/upgrade-your-eoa-to-a-mimic-7702"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline underline-offset-2 hover:opacity-80"
+              >
+                this guide
+              </a>
+              .
+            </span>
           </div>
         )}
 
         {isConnected && !isSmartAccountLoading && isSmartAccount && (
           <div className="w-full rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-500">
-            <span className="font-semibold">EIP-7702 smart account checked.</span>
+            <span className="font-semibold">Your wallet is a Mimic EIP-7702 smart account.</span>
           </div>
         )}
 
         {isConnected && isSmartAccountLoading && (
           <div className="rounded-xl border border-border bg-secondary/30 px-4 py-3 text-sm text-muted-foreground">
-            Checking EIP-7702 delegation…
+            Checking EIP-7702 delegation ...
           </div>
         )}
 
