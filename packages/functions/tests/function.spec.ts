@@ -1,5 +1,5 @@
 import { fp, OpType, randomEvmAddress } from '@mimicprotocol/sdk'
-import { Context, EvmCallQueryMock, runTask, Swap, TokenPriceQueryMock } from '@mimicprotocol/test-ts'
+import { Context, EvmCallQueryMock, runFunction, Swap, TokenPriceQueryMock } from '@mimicprotocol/test-ts'
 import { expect } from 'chai'
 import { Interface } from 'ethers'
 
@@ -7,8 +7,8 @@ import ERC20Abi from '../abis/ERC20.json'
 
 const ERC20Interface = new Interface(ERC20Abi)
 
-describe('Swap Task', () => {
-  const taskDir = './build'
+describe('Swap Function', () => {
+  const buildDir = './build'
 
   const context: Context = {
     user: randomEvmAddress(),
@@ -87,7 +87,7 @@ describe('Swap Task', () => {
   ]
 
   it('builds a vanilla cross-chain swap with correct parameters', async () => {
-    const result = await runTask(taskDir, context, { inputs, calls, prices })
+    const result = await runFunction(buildDir, context, { inputs, calls, prices })
     expect(result.success).to.be.true
     expect(result.timestamp).to.equal(context.timestamp)
 

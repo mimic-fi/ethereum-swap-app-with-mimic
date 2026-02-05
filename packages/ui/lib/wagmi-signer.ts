@@ -29,7 +29,7 @@ export class WagmiSigner implements Signer {
       },
       types,
       message: value,
-      primaryType: 'Config',
+      primaryType: 'Trigger',
     })
   }
 

@@ -2,7 +2,6 @@
 
 import { useAccount, useConfig } from 'wagmi'
 import { useState, useEffect } from 'react'
-import { Config } from '@mimicprotocol/sdk'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -137,14 +136,14 @@ export function Form() {
         slippage,
         signer: new WagmiSigner(address || '', wagmiConfig),
       }
-      const config: Config = await swap(params)
+      const trigger = await swap(params)
       toast({
         title: 'Swap Initiated',
         description: 'Your swap has been created successfully',
         action: (
           <ToastAction
             altText="View config"
-            onClick={() => window.open(`https://protocol.mimic.fi/configs/${config.sig}`, '_blank')}
+            onClick={() => window.open(`https://protocol.mimic.fi/triggers/${trigger.sig}`, '_blank')}
           >
             View
           </ToastAction>

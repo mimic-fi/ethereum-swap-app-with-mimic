@@ -1,9 +1,9 @@
-import { fp, Config, createExecuteOnceTrigger } from '@mimicprotocol/sdk'
+import { fp, Trigger, createExecuteOnceTriggerConfig } from '@mimicprotocol/sdk'
 import { Chain } from '@/lib/chains'
 import { Token } from '@/lib/tokens'
 import sdk from '@/lib/sdk'
 import { WagmiSigner } from '@/lib/wagmi-signer'
-import { BPS_DECIMALS, TASK_CID } from '@/lib/constants'
+import { BPS_DECIMALS, FUNCTION_CID } from '@/lib/constants'
 
 interface SwapParams {
   sourceChain: Chain
@@ -15,17 +15,17 @@ interface SwapParams {
   signer: WagmiSigner
 }
 
-export async function swap(params: SwapParams): Promise<Config> {
+export async function swap(params: SwapParams): Promise<Trigger> {
   const { sourceChain, sourceToken, destinationChain, destinationToken, sourceAmount, slippage, signer } = params
   const description = `Swap ${sourceAmount} ${sourceToken.symbol} on ${sourceChain.name} for ${destinationToken.symbol} on ${destinationChain.name} with ${slippage}% slippage`
-  const manifest = await sdk().tasks.getManifest(TASK_CID)
-  return sdk().configs.signAndCreate(
+  const manifest = await sdk().functions.getManifest(FUNCTION_CID)
+  return sdk().triggers.signAndCreate(
     {
-      taskCid: TASK_CID,
+      functionCid: FUNCTION_CID,
       version: '0.0.1',
       manifest,
       description,
-      trigger: createExecuteOnceTrigger(),
+      config: createExecuteOnceTriggerConfig(),
       input: {
         sourceChainId: sourceChain.id,
         destinationChainId: destinationChain.id,

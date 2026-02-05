@@ -1,6 +1,6 @@
 version: 1.0.1
-name: Swap task
-description: Task to execute cross-chain swaps
+name: Swap function
+description: Function to execute cross-chain swaps
 inputs:
   - sourceChainId: uint32
   - destinationChainId: uint32

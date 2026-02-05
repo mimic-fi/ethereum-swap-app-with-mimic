@@ -3,7 +3,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { Card } from '@/components/ui/card'
 import { ExternalLink, Loader2 } from 'lucide-react'
-import { findExecutions, Execution } from '@/lib/executions'
+import { findExecutions, Execution } from '@/lib/functions'
 import { capitalize } from '@/lib/utils'
 import { useAccount } from 'wagmi'
 
