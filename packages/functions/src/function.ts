@@ -15,21 +15,15 @@ export default function main(): void {
   // Apply slippage to calculate the expected minimum amount out
   const amountIn = TokenAmount.fromStringDecimal(tokenIn, inputs.amountIn)
   const expectedOut = amountIn.toTokenAmount(tokenOut)
-
   if (expectedOut.isError) {
-    log.error(
-      `Failed while trying to convert ${tokenIn} on chain ${inputs.sourceChainId} to ${tokenOut} on chain ${inputs.destinationChainId}`
-    )
+    log.error(`Failed to convert ${tokenIn} on ${inputs.sourceChainId} to ${tokenOut} on ${inputs.destinationChainId}`)
     return
   }
 
-  const slippageFactor = BPS_DENOMINATOR.minus(BigInt.fromI32(inputs.slippageBps as i32))
-  const minAmountOut = expectedOut.unwrap().times(slippageFactor).div(BPS_DENOMINATOR)
+  const minAmountOut = expectedOut.unwrap().applySlippageBps(inputs.slippageBps as i32)
+  log.info(`Swap ${amountIn} on ${inputs.sourceChainId} to at least ${minAmountOut} on ${inputs.destinationChainId}`)
 
   // Execute swap
-  log.info(
-    `Swap ${amountIn} on chain ${inputs.sourceChainId} to at least ${minAmountOut} on chain ${inputs.destinationChainId}`
-  )
   SwapBuilder.forChains(inputs.sourceChainId, inputs.destinationChainId)
     .addTokenInFromTokenAmount(amountIn)
     .addTokenOutFromTokenAmount(minAmountOut, environment.getContext().user)
